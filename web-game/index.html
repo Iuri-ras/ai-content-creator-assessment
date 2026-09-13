@@ -18,7 +18,7 @@
             height: 100vh;
             overflow: hidden;
             touch-action: manipulation;
-            transition: background-color 0.15s ease; /* Smooth flash transition */
+            transition: background-color 0.15s ease;
         }
         #game-container {
             text-align: center;
@@ -30,7 +30,8 @@
             box-shadow: 0 0 20px rgba(15, 52, 96, 0.8);
             margin-bottom: 10px;
         }
-        h1 { margin: 0 0 10px 0; font-size: 24px; color: #e94560; }
+        h1 { margin: 0 0 5px 0; font-size: 24px; color: #e94560; }
+        #highestStreakDisplay { font-size: 16px; color: #4caf50; font-weight: bold; margin-bottom: 10px; }
         p { margin: 5px 0; font-size: 14px; color: #a2a8d3; max-width: 300px; }
         #status { font-size: 20px; font-weight: bold; margin-bottom: 5px; color: #e94560; height: 24px;}
         #timerDisplay { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #f9a826; height: 22px; }
@@ -54,6 +55,7 @@
 
 <div id="game-container">
     <h1>Vault Lock: Endless</h1>
+    <div id="highestStreakDisplay">Highest Streak: 0</div>
     <p id="instructions">Tap or click ANYWHERE in the green zone. The dial reverses and gets faster each time. Survive as long as you can!</p>
     <div id="status"></div>
     <div id="timerDisplay"></div>
@@ -69,14 +71,15 @@
     const statusText = document.getElementById('status');
     const timerDisplay = document.getElementById('timerDisplay');
     const instructions = document.getElementById('instructions');
+    const highestStreakDisplay = document.getElementById('highestStreakDisplay');
 
     let isPlaying = false;
     let animationId;
-    let streak = 0; // Replaced "level" with endless streak
+    let streak = 0; 
     let highestStreak = 0;
     let dialAngle = 0;
     let baseSpeed = 0.05;
-    let dialDirection = 1; // 1 for clockwise, -1 for counter-clockwise
+    let dialDirection = 1; 
     
     let targetStart = 0;
     let targetSize = Math.PI / 2; 
@@ -88,7 +91,6 @@
     const centerY = canvas.height / 2;
     const radius = 130;
 
-    // Web Audio API setup
     let audioCtx;
 
     function initAudio() {
@@ -135,11 +137,9 @@
 
     function setupLevel() {
         targetStart = Math.random() * (Math.PI * 2);
-        // Target gets smaller, but never infinitely small (min size 0.3 radians)
         targetSize = Math.max(0.3, (Math.PI / 2) * Math.pow(0.9, streak)); 
-        // Speed increases gradually
         baseSpeed = 0.04 + (streak * 0.005); 
-        timeLeft = 5.0 - Math.min(3.0, streak * 0.1); // Timer gets tighter up to a cap
+        timeLeft = 5.0 - Math.min(3.0, streak * 0.1); 
         
         statusText.innerText = `Streak: ${streak}`;
         statusText.style.color = "#a2a8d3";
@@ -192,7 +192,6 @@
         timerDisplay.innerText = `Time: ${timeLeft.toFixed(1)}s`;
 
         dialAngle += baseSpeed * dialDirection;
-        // Keep angle wrapped correctly for both directions
         if (dialAngle > Math.PI * 2) dialAngle -= Math.PI * 2; 
         if (dialAngle < 0) dialAngle += Math.PI * 2;
     }
@@ -220,10 +219,13 @@
 
         if (hit) {
             streak++;
-            if (streak > highestStreak) highestStreak = streak;
-            dialDirection *= -1; // Reverse direction
-            playTone(880, 'sine', 0.15); // High beep
-            flashBackground('#1c4228'); // Green flash
+            if (streak > highestStreak) {
+                highestStreak = streak;
+                highestStreakDisplay.innerText = `Highest Streak: ${highestStreak}`;
+            }
+            dialDirection *= -1; 
+            playTone(880, 'sine', 0.15); 
+            flashBackground('#1c4228'); 
             setupLevel();
         } else {
             endGame(false, "Lockout! You Missed.");
@@ -235,12 +237,12 @@
         cancelAnimationFrame(animationId);
         draw(); 
         
-        playTone(150, 'sawtooth', 0.4); // Low buzz on fail
-        flashBackground('#521822'); // Red flash
+        playTone(150, 'sawtooth', 0.4); 
+        flashBackground('#521822'); 
         
-        statusText.innerHTML = `${message}<br><span style="font-size:16px; color:#a2a8d3">Highest Streak: ${highestStreak}</span>`;
+        statusText.innerHTML = `${message}`;
         statusText.style.color = "#e94560";
-        statusText.style.height = "50px";
+        statusText.style.height = "24px";
         timerDisplay.innerText = "";
         
         actionBtn.innerText = "Restart Game";
